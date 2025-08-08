@@ -1,9 +1,10 @@
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import { admin, Timestamp } from "../../config/firebase";
 import express from "express";
 import { ApiResponse } from "./types";
 import { parseTransaction } from "./utils";
 import { CATEGORY_RULES, MERCHANT_PATTERNS } from "./const";
+
 
 const app = express.Router();
 
@@ -20,6 +21,44 @@ app.get("/health", (req, res) => {
         timestamp: new Date().toISOString(),
     });
 });
+
+app.post("/user", async (req, res) => {
+    try {
+        // add user information
+        const { name, email } = req.body;
+        if (!name || !email) {
+            res.status(400).json({
+                success: false,
+                error: "Missing user information",
+                message: "Please provide userId, name, and email",
+            } as ApiResponse);
+            return;
+        }
+
+        // Store user information in Firestore
+        const user = await admin.firestore().collection("users").add({
+            name,
+            email,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+
+        const userId = user.id; // Assuming Firestore returns the document ID
+
+        res.json({
+            success: true,
+            message: "User information saved successfully",
+            data: { userId, name, email },
+        } as ApiResponse);
+    } catch (error) {
+        functions.logger.error("Error in /user route:", error);
+        res.status(500).json({
+            success: false,
+            error: "Internal server error",
+            message: "Failed to process user request",
+        } as ApiResponse);
+    }
+})
 
 /**
  * API documentation endpoint
@@ -73,6 +112,7 @@ app.post("/parse", async (req, res) => {
             // e.g., parsed.recurrence = detectRecurrenceWithHistory(parsed, historicalTransactions);
         }
 
+
         // Optional Firestore storage
         if (userId) {
             try {
@@ -82,8 +122,8 @@ app.post("/parse", async (req, res) => {
                     .collection("transactions")
                     .add({
                         ...parsed,
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: Timestamp.now(),
+                        updatedAt: Timestamp.now(),
                     });
             } catch (firestoreError) {
                 functions.logger.warn("Failed to store transaction in Firestore:", firestoreError);
@@ -97,7 +137,7 @@ app.post("/parse", async (req, res) => {
             data: parsed,
             metadata: {
                 version: "1.0.0",
-                timestamp: new Date().toISOString(),
+                timestamp: Timestamp.now().toDate().toISOString(),
                 processingTimeMs: processingTime,
             },
         } as ApiResponse);
@@ -170,8 +210,8 @@ app.post("/parse/batch", async (req, res) => {
                     const docRef = userTransactionsRef.doc();
                     batch.set(docRef, {
                         ...result.data,
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: Timestamp.now(),
+                        updatedAt: Timestamp.now(),
                     });
                 });
 
@@ -197,7 +237,7 @@ app.post("/parse/batch", async (req, res) => {
             },
             metadata: {
                 version: "1.0.0",
-                timestamp: new Date().toISOString(),
+                timestamp: Timestamp.now().toDate().toISOString(),
                 processingTimeMs: processingTime,
             },
         } as ApiResponse);

@@ -1,25 +1,18 @@
 import express from "express";
 import cors from "cors";
 import routes from "./routes";
-import * as admin from "firebase-admin";
+import { initializeFirebaseAdmin } from "./config/firebase";
 import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/v2";
 
 const app = express();
 
-// Initialize Firebase Admin (only once)
-if (!admin.apps.length) {
-    admin.initializeApp();
-}
+// Initialize Firebase Admin
+initializeFirebaseAdmin();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(
-    cors({
-        origin: true,
-    }),
-);
+app.use(cors({ origin: true }));
 
 // Your route handlers
 app.use(routes);
@@ -30,7 +23,7 @@ app.use((req, res) => {
         method: req.method,
         url: req.url,
         ip: req.ip,
-        userAgent: req.get('User-Agent'),
+        userAgent: req.get("User-Agent"),
         timestamp: new Date().toISOString()
     };
 

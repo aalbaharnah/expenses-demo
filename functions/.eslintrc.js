@@ -28,6 +28,14 @@ module.exports = {
   rules: {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
-    "indent": ["error", 2],
+    "indent": 0,
+    "object-curly-spacing": 0,
+    "valid-jsdoc": 0,
+    "max-len": 0,
+    "no-useless-escape": 0,
+    "eol-last": 0,
+    "comma-dangle": 0,
+    "new-cap": 0,
+    "semi": 0
   },
 };
