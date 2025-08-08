@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { UserService, TransactionService } from "../../services";
+import { TransactionService } from "../../services";
 import { validateRequest, validatePagination } from "../../middleware/validation";
 import { asyncHandler, notFoundHandler, errorHandler } from "../../middleware/error-handler";
 import { sendSuccess, sendCreated, sendPaginated } from "../../utils/response";
