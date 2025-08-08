@@ -10,7 +10,6 @@ import { CATEGORY_RULES, MERCHANT_PATTERNS } from "./const";
 const app = express.Router();
 
 // Initialize services
-const userService = new UserService();
 const transactionService = new TransactionService();
 
 // ==================== API ROUTES ====================
@@ -23,17 +22,6 @@ app.get("/health", asyncHandler(async (req: Request, res: Response) => {
         message: "Saudi Bank Transaction Parser API is running",
         version: "1.0.0",
     });
-}));
-
-/**
- * Create new user
- */
-app.post("/user", validateRequest("user"), asyncHandler(async (req: Request, res: Response) => {
-    const { name, email } = req.body;
-
-    const user = await userService.createUser({ name, email });
-
-    sendCreated(res, user, "User created successfully");
 }));
 
 /**
